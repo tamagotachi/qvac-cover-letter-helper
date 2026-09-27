@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Letter Helper</title>
+<style>
+  :root { --bg: #f4f5f7; --ink: #1c2230; --muted: #647084; --line: #dbe0e8; --card: #fff; --navy: #1f3a68; --green: #2b8a3e; --amber: #d9480f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 1060px; margin: 0 auto; padding: 26px 16px 56px; }
+  h1 { font: 700 32px/1.1 Georgia, serif; margin: 0; } h1 span { color: var(--navy); font-style: italic; } .sub { color: var(--muted); margin: 4px 0 8px; }
+  #status { font-size: 13px; color: var(--muted); margin: 0 0 12px; } #status.ok { color: var(--green); } #status.err { color: #c92a2a; }
+  .cols { display: grid; grid-template-columns: 1fr 1.1fr; gap: 16px; align-items: start; } @media (max-width: 840px) { .cols { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; } .panel h2 { font-size: 17px; margin: 0 0 8px; }
+  label.small { font-size: 13px; font-weight: 700; color: var(--muted); display: block; margin: 10px 0 4px; } label.small:first-child { margin-top: 0; }
+  input, select, textarea { width: 100%; font: inherit; padding: 9px 12px; border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); } textarea { min-height: 110px; resize: vertical; }
+  .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; } .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 500px) { .three, .two { grid-template-columns: 1fr; } }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 3px solid #91a7ff; outline-offset: 2px; }
+  button { font: inherit; font-weight: 700; padding: 10px 18px; border: 0; border-radius: 10px; background: var(--navy); color: #fff; cursor: pointer; }
+  button.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); padding: 6px 12px; font-size: 14px; } button.busy { opacity: .55; cursor: progress; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; } .note { color: var(--muted); font-size: 14px; min-height: 20px; margin: 8px 0 0; }
+  #letter { min-height: 440px; font: 16px/1.7 Georgia, serif; background: #fffefb; }
+  .kws { display: flex; gap: 6px; flex-wrap: wrap; } .kws span { font-size: 13px; font-weight: 700; border-radius: 99px; padding: 2px 10px; } .kws .yes { background: #d3f9d8; color: var(--green); } .kws .no { background: #fff4e6; color: var(--amber); }
+  .honest { background: #fff9db; border-radius: 10px; padding: 8px 12px; font-size: 14px; margin-top: 10px; } #wc { font-size: 13px; color: var(--muted); } .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cover Letter <span>Helper</span></h1>
+  <p class="sub">Paste the job ad and your real experience. Get a tailored first draft and see which skills from the ad you've covered.</p>
+  <p id="status">Checking the AI letter writer...</p>
+  <div class="cols">
+    <section>
+      <div class="panel">
+        <div class="three"><div><label class="small" for="name">Your name</label><input id="name" maxlength="60" autocomplete="off" placeholder="Ana Cruz"></div><div><label class="small" for="job">Job title</label><input id="job" maxlength="80" autocomplete="off" placeholder="Library Assistant"></div><div><label class="small" for="company">Company</label><input id="company" maxlength="80" autocomplete="off" placeholder="City Library"></div></div>
+        <label class="small" for="ad">The job ad (paste it)</label><textarea id="ad" placeholder="Paste the job description here..."></textarea>
+        <label class="small" for="exp">Your real experience (bullet points are fine)</label><textarea id="exp" placeholder="- Volunteered at school library for 2 years&#10;- Organized a book fair&#10;- Good with computers and kids"></textarea>
+        <div class="two"><div><label class="small" for="tone">Tone</label><select id="tone"><option value="friendly">Warm and friendly</option><option value="confident">Confident</option><option value="formal">Formal</option></select></div>
+          <div><label class="small" for="length">Length</label><select id="length"><option value="short">Short (~150 words)</option><option value="standard" selected>Standard (~250 words)</option></select></div></div>
+        <div class="row"><button id="go">Write my draft</button><button class="ghost" id="sample">Try a sample</button></div>
+        <p class="note" id="note"></p>
+      </div>
+    </section>
+    <section>
+      <div class="panel">
+        <h2>Skills the ad asks for</h2><div class="kws" id="kws"><span class="no">Paste a job ad to see its key words</span></div>
+        <p class="note" style="margin-top:6px">Green = in your letter. Orange = not yet. Only add the ones that are really true for you.</p>
+      </div>
+      <div class="panel">
+        <h2>Your letter (edit freely)</h2>
+        <textarea id="letter" aria-label="Your cover letter"></textarea>
+        <div class="row"><span id="wc">0 words</span><span style="flex:1"></span><button class="ghost" id="copy">Copy</button><button class="ghost" id="dl">Download .txt</button></div>
+        <div class="honest">✋ Read it carefully before sending. The AI is told to use only your real experience, but always check that every sentence is true.</div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const STOP = new Set("about above after again against their there these those would could should which while where when what with within without your yours ourselves able also into from have having this that than then them they will been being were more most other some such only very just over under through during each both until because before between must work working role team teams including include across ensure provide support using used strong excellent ability skills experience years year looking candidate position company join help within apply applicants please required preferred responsibilities requirements plus".split(" "));
+let busy = false, ai = { ready: false, message: "Loading...", percent: null, error: null };
+try { const s = JSON.parse(localStorage.getItem("coverLetter") || "null"); if (s) ["name", "job", "company", "ad", "exp", "letter"].forEach((k) => ($(k).value = s[k] || "")); } catch {}
+const persist = () => { try { localStorage.setItem("coverLetter", JSON.stringify(Object.fromEntries(["name", "job", "company", "ad", "exp", "letter"].map((k) => [k, $(k).value])))); } catch {} };
+$("sample").addEventListener("click", () => { $("name").value = "Ana Cruz"; $("job").value = "Library Assistant"; $("company").value = "Riverside City Library";
+  $("ad").value = "Riverside City Library is looking for a part-time Library Assistant. You will help visitors find books, shelve returns, support children's reading events and help people use our computers. We need someone organized, friendly, patient and good with technology. Customer service experience is a plus.";
+  $("exp").value = "- Volunteered at my school library for 2 years, shelving books and helping students find what they need\n- Organized a school book fair with 3 friends\n- Help my younger cousins with homework and reading\n- Comfortable with computers, Google Docs and fixing printer problems"; keywords(); persist(); });
+
+// Key words from the ad: longer words that appear in it, most frequent first (plain code)
+function adWords() { const counts = {}; ($("ad").value.toLowerCase().match(/[a-z][a-z-]{4,}/g) || []).forEach((w) => { if (!STOP.has(w)) counts[w] = (counts[w] || 0) + 1; }); return Object.entries(counts).sort((a, b) => b[1] - a[1] || b[0].length - a[0].length).slice(0, 14).map(([w]) => w); }
+function keywords() {
+  const words = adWords(), letter = $("letter").value.toLowerCase(), box = $("kws"); box.innerHTML = "";
+  if (!words.length) { box.innerHTML = '<span class="no">Paste a job ad to see its key words</span>'; return; }
+  words.forEach((w) => { const s = document.createElement("span"); const stem = w.slice(0, Math.max(5, w.length - 3)); const yes = letter.includes(stem); s.className = yes ? "yes" : "no"; s.textContent = (yes ? "\u2713 " : "\u25cb ") + w; box.append(s); });
+}
+function wc() { const n = ($("letter").value.match(/\S+/g) || []).length; $("wc").textContent = n + " words"; }
+["ad", "letter"].forEach((id) => $(id).addEventListener("input", () => { keywords(); wc(); persist(); })); ["name", "job", "company", "exp"].forEach((id) => $(id).addEventListener("input", persist));
+
+// Simple letter from your own bullet points, for when the AI isn't ready yet
+function template() {
+  const name = $("name").value.trim() || "[Your name]", job = $("job").value.trim() || "this position", co = $("company").value.trim() || "your organization";
+  const bullets = $("exp").value.split("\n").map((b) => b.replace(/^[-*\u2022\s]+/, "").trim()).filter(Boolean);
+  return "Dear Hiring Manager,\n\nI am writing to apply for the " + job + " role at " + co + ". I believe my experience would make me a helpful addition to your team.\n\n" +
+    (bullets.length ? "Here is some of my relevant experience:\n" + bullets.slice(0, 5).map((b) => "\u2022 " + b).join("\n") + "\n\n" : "") + "These experiences taught me to be reliable, organized and friendly with the people I help.\n\n" +
+    "I would welcome the chance to bring this energy to " + co + ". Thank you for considering my application. I look forward to hearing from you.\n\nSincerely,\n" + name;
+}
+async function write() {
+  if (busy) return; if ($("ad").value.trim().length < 30) { $("note").textContent = "Paste the job ad first (or try the sample)."; return $("ad").focus(); }
+  if ($("exp").value.trim().length < 15) { $("note").textContent = "Add some of your real experience first."; return $("exp").focus(); }
+  if ($("letter").value.trim().length > 50 && !confirm("Replace the letter you have now with a new draft?")) return;
+  if (!ai.ready) { $("letter").value = template(); keywords(); wc(); persist(); $("note").textContent = (ai.error ? "The AI isn't available" : "The AI is still loading" + (ai.percent != null ? " (" + ai.percent + "%)" : "")) + ", so this is a simple draft built from your bullet points."; return; }
+  busy = true; $("go").classList.add("busy"); $("note").textContent = "Writing your draft..."; $("letter").value = "";
+  try {
+    const res = await fetch("/api/letter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: $("name").value, job: $("job").value, company: $("company").value, ad: $("ad").value, exp: $("exp").value, tone: $("tone").value, length: $("length").value }) });
+    if (!res.ok) throw new Error(await res.text()); const reader = res.body.getReader(), dec = new TextDecoder(); let out = "";
+    while (true) { const { value, done } = await reader.read(); if (done) break; out += dec.decode(value, { stream: true }); $("letter").value = out.trimStart(); keywords(); wc(); }
+    if (!out.trim()) throw new Error("the AI didn't write anything"); $("note").textContent = "Draft ready. Now make it yours: add details and check every sentence is true.";
+  } catch (err) { $("letter").value = template(); $("note").textContent = "The AI had a problem (" + err.message + "), so this is a simple draft."; }
+  keywords(); wc(); persist(); busy = false; $("go").classList.remove("busy");
+}
+$("go").addEventListener("click", write);
+$("copy").addEventListener("click", async () => { if (!$("letter").value.trim()) return; try { await navigator.clipboard.writeText($("letter").value); $("copy").textContent = "Copied!"; } catch { $("copy").textContent = "Press Ctrl+C"; } setTimeout(() => ($("copy").textContent = "Copy"), 1200); });
+$("dl").addEventListener("click", () => { if (!$("letter").value.trim()) return; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([$("letter").value], { type: "text/plain" })); a.download = "cover-letter" + ($("company").value.trim() ? "-" + $("company").value.trim().replace(/[^\w-]+/g, "-").toLowerCase() : "") + ".txt"; a.click(); });
+
+async function checkStatus() {
+  try { ai = await (await fetch("/api/status")).json();
+    if (ai.error) return setStatus("AI error: " + ai.error + ". Simple drafts still work.", "err");
+    if (ai.ready) return setStatus("AI letter writer ready. It runs on your device, so your details stay private.", "ok");
+    setStatus(ai.message + (ai.percent != null ? " " + ai.percent + "%" : "") + " Simple drafts work meanwhile.");
+  } catch { ai = { ready: false, error: "the server can't be reached" }; setStatus("Can't reach the server. Open http://localhost:3072 and make sure npm start is running.", "err"); return; }
+  setTimeout(checkStatus, 1500);
+}
+function setStatus(t, c = "") { $("status").textContent = t; $("status").className = c; }
+keywords(); wc(); checkStatus();
+</script>
+</body>
+</html>
